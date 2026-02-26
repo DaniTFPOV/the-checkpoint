@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Checkpoint – Meta Ads Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0C0C0F;
+    --surface: #111116;
+    --surface2: #18181F;
+    --white: #F8F6F1;
+    --cream: #F0EDE4;
+    --green: #1DB954;
+    --green-dark: #158040;
+    --amber: #F5A623;
+    --red: #E8352A;
+    --blue: #60A5FA;
+    --muted: #6B6B72;
+    --border: rgba(248,246,241,0.08);
+    --border-light: rgba(248,246,241,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* NOISE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+  }
+
+  /* ─── PASSWORD GATE ─── */
+  #gate {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 24px;
+    transition: opacity 0.6s, transform 0.6s;
+  }
+
+  #gate.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.02);
+  }
+
+  .gate-card {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+  }
+
+  .gate-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 48px;
+  }
+
+  .gate-logo-dot {
+    width: 10px; height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(29,185,84,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(29,185,84,0); }
+  }
+
+  .gate-logo-text {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .gate-heading {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2.2rem;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .gate-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+
+  .gate-input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .gate-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    padding: 16px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.15em;
+    text-align: center;
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .gate-input::placeholder {
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: none;
+    font-weight: 500;
+  }
+  .gate-input:focus { border-color: var(--green); }
+  .gate-input.error { border-color: var(--red); animation: shake 0.4s ease; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .gate-error {
+    font-size: 0.75rem;
+    color: var(--red);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    height: 20px;
+    margin-bottom: 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .gate-error.show { opacity: 1; }
+
+  .gate-btn {
+    width: 100%;
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .gate-btn:hover { background: #22E865; }
+  .gate-btn:active { transform: scale(0.99); }
+
+  .gate-footer {
+    margin-top: 32px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* ─── MAIN APP ─── */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+  #app.visible { opacity: 1; }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .header-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .header-tagline {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .metric-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .metric-pill {
+    background: rgba(29,185,84,0.1);
+    color: var(--green);
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid rgba(29,185,84,0.2);
+  }
+
+  @media (max-width: 640px) { .metric-pills { display: none; } }
+
+  /* CHAT */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 3px; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border-light); }
+
+  .msg-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+    animation: msgIn 0.3s ease forwards;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .msg-avatar.bot { background: var(--green); color: var(--black); font-weight: 800; }
+  .msg-avatar.user { background: var(--surface2); color: var(--muted); }
+
+  .bubble {
+    padding: 14px 18px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    max-width: calc(100% - 48px);
+    font-weight: 400;
+  }
+
+  .bubble.bot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--white);
+    border-bottom-left-radius: 2px;
+  }
+
+  .bubble.user {
+    background: var(--green);
+    color: var(--black);
+    font-weight: 600;
+    border-bottom-right-radius: 2px;
+  }
+
+  /* Verdict badges */
+  .verdict-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    border-radius: 2px;
+  }
+  .v-green { background: rgba(29,185,84,0.15); color: var(--green); }
+  .v-blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .v-amber { background: rgba(245,166,35,0.15); color: var(--amber); }
+  .v-red { background: rgba(232,53,42,0.15); color: #FF6B6B; }
+
+  .bubble.bot strong { font-weight: 700; color: var(--white); }
+  .bubble.bot em { color: var(--muted); font-style: normal; font-size: 0.82rem; }
+
+  /* WELCOME */
+  .welcome {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .welcome-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+  }
+
+  .welcome-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .welcome-icon {
+    width: 44px; height: 44px;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--black);
+    flex-shrink: 0;
+  }
+
+  .welcome-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    line-height: 1.2;
+  }
+
+  .welcome-sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .welcome-body {
+    font-size: 0.85rem;
+    color: rgba(248,246,241,0.7);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  .starters-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .starters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .starter {
+    background: var(--surface2);
+    border: 1px solid var(--border-light);
+    padding: 8px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(248,246,241,0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .starter:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(29,185,84,0.05);
+  }
+
+  /* TYPING */
+  .typing {
+    display: flex;
+    gap: 5px;
+    padding: 16px 18px;
+    align-items: center;
+  }
+  .tdot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: tdot 1.2s infinite;
+  }
+  .tdot:nth-child(2) { animation-delay: 0.2s; }
+  .tdot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes tdot {
+    0%, 100% { opacity: 0.2; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-4px); }
+  }
+
+  /* INPUT */
+  .input-area {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+
+  .input-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .input-box {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border-light);
+    padding: 13px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--white);
+    resize: none;
+    outline: none;
+    min-height: 48px;
+    max-height: 140px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+  }
+  .input-box::placeholder { color: var(--muted); }
+  .input-box:focus { border-color: var(--green); }
+
+  .send-btn {
+    width: 48px; height: 48px;
+    background: var(--green);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: #22E865; }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; fill: var(--black); }
+
+  .input-hint {
+    max-width: 760px;
+    margin: 8px auto 0;
+    font-size: 0.67rem;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <div class="gate-logo-dot"></div>
+      <div class="gate-logo-text">The Checkpoint</div>
+    </div>
+
+    <h1 class="gate-heading">You're almost in.</h1>
+    <p class="gate-sub">Enter your access code to get started with your personal Meta Ads strategist.</p>
+
+    <div class="gate-input-wrap">
+      <input
+        type="password"
+        class="gate-input"
+        id="passInput"
+        placeholder="Enter access code"
+        onkeydown="if(event.key==='Enter') checkPass()"
+        autocomplete="off"
+      />
+    </div>
+    <div class="gate-error" id="gateError">Incorrect code — try again</div>
+    <button class="gate-btn" onclick="checkPass()">Enter →</button>
+
+    <p class="gate-footer">
+      Don't have an access code? Purchase access to receive yours.
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-logo">
+      <div class="header-dot"></div>
+      The Checkpoint
+    </div>
+    <span class="header-tagline">· Meta Ads Strategist</span>
+    <div class="header-right">
+      <div class="metric-pills">
+        <span class="metric-pill">ROAS</span>
+        <span class="metric-pill">CPM</span>
+        <span class="metric-pill">CTR</span>
+        <span class="metric-pill">CPA</span>
+        <span class="metric-pill">Frequency</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="chat-area" id="chatArea">
+    <div class="welcome">
+      <div class="welcome-inner">
+        <div class="welcome-header">
+          <div class="welcome-icon">TC</div>
+          <div>
+            <div class="welcome-title">Welcome to The Checkpoint.</div>
+            <div class="welcome-sub">Your Meta Ads strategist is ready.</div>
+          </div>
+        </div>
+        <p class="welcome-body">
+          Got a live ad and not sure what to do? Share your metrics — ROAS, CPM, CTR, CPC, CPA, CPL, Frequency, Spend — and I'll give you a straight verdict: <strong>leave it, scale it, change the creative, or pause it.</strong> No agency fees. No jargon. Just clear next steps.
+        </p>
+        <div class="starters-label">Try one of these</div>
+        <div class="starters" id="starters">
+          <button class="starter" onclick="useStarter(this)">My ROAS dropped from 4x to 2x overnight 😰</button>
+          <button class="starter" onclick="useStarter(this)">CTR is 0.5% — should I change creative?</button>
+          <button class="starter" onclick="useStarter(this)">Frequency hit 4.2 — what now?</button>
+          <button class="starter" onclick="useStarter(this)">CPM is $45 — is that too high?</button>
+          <button class="starter" onclick="useStarter(this)">Ad been running 3 days with zero purchases</button>
+          <button class="starter" onclick="useStarter(this)">When should I scale my budget?</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea
+        class="input-box"
+        id="userInput"
+        placeholder="Paste your metrics or describe what's happening with your ad…"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">The Checkpoint uses AI · Validate with your own data · Not financial advice</div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+// TO CHANGE YOUR PASSWORD: update the value below
+const ACCESS_PASSWORD = 'CHECKPOINT25';
+// ──────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `You are The Checkpoint — a senior Meta Ads strategist with 10+ years of experience helping small businesses and creators get real results from paid social. You're that brilliant friend who knows this stuff inside out and gives it straight — warm, clear, no fluff, no jargon.
+
+YOUR ROLE:
+Help people interpret their live Meta ad metrics and decide what to do next: leave it alone, scale it, change creative, adjust targeting, or pause it.
+
+YOUR PERSONALITY:
+- Warm, encouraging, and direct — never intimidating or condescending
+- Opinionated — you give a clear verdict, not "it depends" non-answers
+- You explain the WHY in plain English
+- You treat small business owners as intelligent adults who just need clear guidance
+- Occasionally use 1–2 emojis to keep it friendly, not more
+
+METRICS BENCHMARKS:
+- ROAS: E-commerce typically wants 3x+ (4x+ for thin margins). Lead gen doesn't use ROAS the same way.
+- CPM: $10–25 healthy. $30–60 elevated but acceptable in competitive niches. $60+ is a red flag.
+- CPC: Under $1.50 great. $1.50–$3 decent. $3+ needs attention. Over $5 = creative/relevance problem.
+- CTR: Under 0.5% = change creative urgently. 0.5–1% weak. 1–2% average. 2–3% good. 3%+ strong.
+- Frequency: 1–2 ideal for cold audiences. 2–3.5 starting to fatigue. 3.5+ = audience burning out.
+- Ad Spend: Under $30/day = algorithm starved. $50/day minimum for real learning.
+
+THE LEARNING PHASE:
+- Meta needs ~50 conversions in 7 days to exit learning
+- During learning: DO NOT TOUCH the ad — any edit resets it
+- Results will be inconsistent during learning — this is normal
+- If CTR is under 0.5% or CPA is 3x target after $200+ spend and 5+ days, it's okay to intervene
+
+DECISION FRAMEWORK:
+1. LEAVE IT (✋): In learning phase with normal metrics, OR consistently positive results below fatigue threshold
+2. SCALE IT (🚀): ROAS above target for 3–5 days, frequency below 2.5. Scale max 20% every 3–5 days. Or duplicate the ad set.
+3. CHANGE CREATIVE (🎨): CTR under 1%, frequency over 3.5, CPM spiking, ROAS declining. Test new hook/visual/angle — don't touch targeting.
+4. ADJUST TARGETING: High CPM + decent CTR = audience issue (too narrow or too broad)
+5. PAUSE IT (⏸️): CPA more than 2x profit margin, no purchases after 3–5x target CPA spend, CTR under 0.5%
+
+IF METRICS ARE MISSING — warmly ask for:
+- Their campaign goal (purchases, leads, traffic, awareness)
+- Daily budget
+- How long the ad has been running
+- Their target CPA or ROAS goal
+
+RESPONSE FORMAT:
+1. Start with a clear verdict: ✋ Leave it / 🚀 Scale it / 🎨 Change the creative / ⏸️ Pause it
+2. Explain what the metrics are actually saying (plain English)
+3. Give specific action steps — exact numbers, not vague advice
+4. Add one "Watch out for" flag if relevant
+5. Keep responses 150–250 words max
+6. End with a short follow-up question or encouraging note
+
+RULES:
+- Never recommend changing multiple things at once
+- Never touch an ad in learning unless clearly failing
+- Always ask about profit margins before giving a ROAS verdict if unknown
+- Be specific: not "increase budget" but "raise from $50 to $60/day — a 20% increase. Wait 3–5 days before touching it again."
+- If they seem stressed, acknowledge it first. Paid ads can be nerve-wracking.`;
+
+let messages = [];
+let isLoading = false;
+
+// ─── PASSWORD GATE ────────────────────────────────────────
+function checkPass() {
+  const input = document.getElementById('passInput');
+  const error = document.getElementById('gateError');
+  const val = input.value.trim().toUpperCase();
+
+  if (val === ACCESS_PASSWORD) {
+    document.getElementById('gate').classList.add('hidden');
+    setTimeout(() => {
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+    }, 600);
+  } else {
+    input.classList.add('error');
+    error.classList.add('show');
+    setTimeout(() => {
+      input.classList.remove('error');
+      input.value = '';
+    }, 600);
+  }
+}
+
+// ─── CHAT LOGIC ───────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function useStarter(btn) {
+  document.getElementById('userInput').value = btn.textContent;
+  sendMessage();
+}
+
+function appendMsg(role, content) {
+  const area = document.getElementById('chatArea');
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+
+  const av = document.createElement('div');
+  av.className = `msg-avatar ${role}`;
+  av.textContent = role === 'bot' ? 'TC' : '👤';
+
+  const bub = document.createElement('div');
+  bub.className = `bubble ${role}`;
+
+  if (role === 'bot') {
+    bub.innerHTML = formatBot(content);
+  } else {
+    bub.textContent = content;
+  }
+
+  row.appendChild(av);
+  row.appendChild(bub);
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  return bub;
+}
+
+function formatBot(text) {
+  let html = text;
+
+  // Verdict badges
+  const verdicts = [
+    { pattern: /✋\s*Leave it/i, cls: 'v-green', label: '✋ Leave It' },
+    { pattern: /🚀\s*Scale it/i, cls: 'v-blue', label: '🚀 Scale It' },
+    { pattern: /🎨\s*Change the creative/i, cls: 'v-amber', label: '🎨 Change Creative' },
+    { pattern: /⏸️\s*Pause it/i, cls: 'v-red', label: '⏸️ Pause It' },
+  ];
+
+  verdicts.forEach(v => {
+    html = html.replace(v.pattern, `<span class="verdict-badge ${v.cls}">${v.label}</span>`);
+  });
+
+  // Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Newlines
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+}
+
+function showTyping() {
+  const area = document.getElementById('chatArea');
+  const row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.id = 'typingRow';
+
+  const av = document.createElement('div');
+  av.className = 'msg-avatar bot';
+  av.textContent = 'TC';
+
+  const bub = document.createElement('div');
+  bub.className = 'bubble bot';
+  bub.innerHTML = '<div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>';
+
+  row.appendChild(av);
+  row.appendChild(bub);
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingRow');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Remove welcome starters
+  const starters = document.getElementById('starters');
+  if (starters) starters.closest('.welcome')?.remove();
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendMsg('user', text);
+  messages.push({ role: 'user', content: text });
+
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages
+      })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.content?.[0]?.text) {
+      const reply = data.content[0].text;
+      appendMsg('bot', reply);
+      messages.push({ role: 'assistant', content: reply });
+    } else {
+      appendMsg('bot', "Something went wrong on my end — please try again.");
+    }
+  } catch (err) {
+    removeTyping();
+    appendMsg('bot', "Connection issue. Please check your internet and try again.");
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+</script>
+</body>
+</html>

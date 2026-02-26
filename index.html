@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Checkpoint – Your Meta Ads Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0C0C0F;
+    --white: #F8F6F1;
+    --cream: #F0EDE4;
+    --green: #1DB954;
+    --green-dim: #12773A;
+    --amber: #F5A623;
+    --red: #E8352A;
+    --muted: #7A7870;
+    --border: rgba(248,246,241,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--green);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: exclusion;
+  }
+  .cursor.big { width: 40px; height: 40px; }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    background: rgba(12,12,15,0.8);
+  }
+
+  .nav-logo {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .nav-cta {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 10px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: none;
+    transition: background 0.2s, color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .nav-cta:hover { background: var(--green); color: var(--black); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(248,246,241,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(248,246,241,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .hero-bg-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(29,185,84,0.12) 0%, transparent 70%);
+    top: 50%; left: 60%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: drift 8s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-45%, -55%) scale(1.1); }
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--green);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.1s;
+  }
+
+  .hero-eyebrow-line {
+    width: 40px; height: 1px;
+    background: var(--green);
+  }
+
+  .hero-headline {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(3.5rem, 8vw, 8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 40px;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.25s;
+  }
+
+  .hero-headline em {
+    font-style: italic;
+    color: var(--green);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 480px;
+    margin-bottom: 48px;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.4s;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.55s;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    padding: 16px 36px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: none;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '→';
+    margin-left: 10px;
+    transition: margin 0.2s;
+  }
+  .btn-primary:hover { background: #22E865; }
+  .btn-primary:hover::after { margin-left: 16px; }
+
+  .btn-ghost {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: none;
+    transition: color 0.2s;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { color: var(--white); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TICKER */
+  .ticker {
+    background: var(--green);
+    padding: 12px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-track {
+    display: inline-flex;
+    animation: ticker 20s linear infinite;
+  }
+
+  .ticker-item {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--black);
+    padding: 0 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .ticker-item::after {
+    content: '◆';
+    font-size: 0.5rem;
+  }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* PROBLEM SECTION */
+  .section {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--muted);
+    display: inline-block;
+  }
+
+  .section-heading {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+  }
+
+  /* SCENARIOS */
+  .scenarios {
+    background: rgba(248,246,241,0.03);
+    border: 1px solid var(--border);
+    padding: 120px 48px;
+  }
+
+  .scenarios-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2px;
+    margin-top: 64px;
+    background: var(--border);
+  }
+
+  .scenario-card {
+    background: var(--black);
+    padding: 40px 32px;
+    transition: background 0.3s;
+  }
+  .scenario-card:hover { background: #111116; }
+
+  .scenario-icon {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .scenario-verdict {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  .verdict-green { background: rgba(29,185,84,0.15); color: var(--green); }
+  .verdict-blue { background: rgba(59,130,246,0.15); color: #60A5FA; }
+  .verdict-amber { background: rgba(245,166,35,0.15); color: var(--amber); }
+  .verdict-red { background: rgba(232,53,42,0.15); color: #FF6B6B; }
+
+  .scenario-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .scenario-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 64px;
+    counter-reset: step;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 32px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .step:first-child { border-top: 1px solid var(--border); }
+
+  .step-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 3rem;
+    color: rgba(248,246,241,0.15);
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .step-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .step-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 120px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(29,185,84,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .cta-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .cta-price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+
+  .cta-price-amount {
+    font-family: 'Instrument Serif', serif;
+    font-size: 4rem;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .cta-price-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .cta-features {
+    list-style: none;
+    margin: 0 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+    display: inline-flex;
+  }
+
+  .cta-features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .cta-features li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .hero { padding: 100px 24px 60px; }
+    .section { padding: 80px 24px; }
+    .scenarios { padding: 80px 24px; }
+    .cta-section { padding: 80px 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .step { grid-template-columns: 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    The Checkpoint
+  </div>
+  <a href="checkpoint.html" class="nav-cta">Get Access</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-glow"></div>
+
+  <div class="hero-eyebrow">
+    <div class="hero-eyebrow-line"></div>
+    Meta Ads · Real-Time Strategy
+  </div>
+
+  <h1 class="hero-headline">
+    Stop guessing.<br>
+    <em>Start knowing</em><br>
+    what your ads mean.
+  </h1>
+
+  <p class="hero-sub">
+    The Checkpoint is your on-demand Meta Ads strategist. Paste your metrics, get a clear verdict — leave it, scale it, change creative, or cut it. No agency fees. No jargon. Just answers.
+  </p>
+
+  <div class="hero-actions">
+    <a href="checkpoint.html" class="btn-primary">Enter The Checkpoint</a>
+    <a href="#how" class="btn-ghost">See how it works</a>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">Should I scale?</span>
+    <span class="ticker-item">My ROAS dropped overnight</span>
+    <span class="ticker-item">Frequency hit 4.2 — now what?</span>
+    <span class="ticker-item">CPM is $50 — is that bad?</span>
+    <span class="ticker-item">No purchases after 3 days</span>
+    <span class="ticker-item">CTR is 0.4% — change creative?</span>
+    <span class="ticker-item">Learning phase — do I touch it?</span>
+    <span class="ticker-item">Should I scale?</span>
+    <span class="ticker-item">My ROAS dropped overnight</span>
+    <span class="ticker-item">Frequency hit 4.2 — now what?</span>
+    <span class="ticker-item">CPM is $50 — is that bad?</span>
+    <span class="ticker-item">No purchases after 3 days</span>
+    <span class="ticker-item">CTR is 0.4% — change creative?</span>
+    <span class="ticker-item">Learning phase — do I touch it?</span>
+  </div>
+</div>
+
+<div class="scenarios" id="scenarios">
+  <div class="scenarios-inner">
+    <div class="section-label">What it does</div>
+    <h2 class="section-heading">Every verdict, explained<br>in plain English.</h2>
+
+    <div class="scenarios-grid">
+      <div class="scenario-card">
+        <span class="scenario-icon">✋</span>
+        <div class="scenario-verdict verdict-green">Leave It Alone</div>
+        <div class="scenario-title">Your ad is in learning — don't touch it yet</div>
+        <p class="scenario-desc">Meta's algorithm needs time. The Checkpoint tells you when patience is the strategy, so you don't reset progress by accident.</p>
+      </div>
+      <div class="scenario-card">
+        <span class="scenario-icon">🚀</span>
+        <div class="scenario-verdict verdict-blue">Scale It</div>
+        <div class="scenario-title">ROAS is strong — here's exactly how to scale</div>
+        <p class="scenario-desc">Not just "increase budget." You'll know the exact percentage, when to do it, and how to scale without killing what's working.</p>
+      </div>
+      <div class="scenario-card">
+        <span class="scenario-icon">🎨</span>
+        <div class="scenario-verdict verdict-amber">Change Creative</div>
+        <div class="scenario-title">Frequency is killing your results</div>
+        <p class="scenario-desc">When your audience has seen your ad too many times, The Checkpoint spots it and tells you exactly what to test next.</p>
+      </div>
+      <div class="scenario-card">
+        <span class="scenario-icon">⏸️</span>
+        <div class="scenario-verdict verdict-red">Pause It</div>
+        <div class="scenario-title">Cut losses before they compound</div>
+        <p class="scenario-desc">Know when an ad has genuinely failed vs. when it just needs more time. Stop burning budget on ads that won't recover.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="how">
+  <div class="section-label">How it works</div>
+  <h2 class="section-heading">Three steps to<br>your next move.</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div>
+        <div class="step-title">Share your metrics</div>
+        <p class="step-desc">Paste in whatever you can see — ROAS, CPM, CTR, CPC, CPA, Frequency, Spend. Even partial data works. The Checkpoint will ask for anything it needs.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div>
+        <div class="step-title">Get a clear verdict</div>
+        <p class="step-desc">No vague answers. You'll get a direct recommendation — leave it, scale it, change creative, or pause — with the reasoning behind it in plain English.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div>
+        <div class="step-title">Know your exact next step</div>
+        <p class="step-desc">Not just what to do, but how to do it. "Increase budget by 20% — from $50 to $60/day. Wait 3–5 days before touching it again." That specific.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="access">
+  <div class="cta-inner">
+    <div class="section-label" style="justify-content:center; margin-bottom: 32px;">Get Access</div>
+    <h2 class="section-heading" style="margin-bottom: 40px;">Ready to stop second-guessing your ads?</h2>
+
+    <ul class="cta-features">
+      <li>Senior-level Meta Ads strategy, instant</li>
+      <li>All key metrics interpreted for you</li>
+      <li>Clear verdicts — no wishy-washy answers</li>
+      <li>No agency fees, no monthly retainer</li>
+      <li>Works for e-commerce, leads & creators</li>
+    </ul>
+
+    <br><br>
+    <a href="checkpoint.html" class="btn-primary" style="font-size: 0.9rem; padding: 18px 48px;">Enter The Checkpoint</a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2025 The Checkpoint</span>
+  <span>Built for creators & small businesses</span>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, .starter-chip').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+</script>
+</body>
+</html>
