@@ -610,8 +610,7 @@
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-// TO CHANGE YOUR PASSWORD: update the value below
-const ACCESS_PASSWORD = 'CHECKPOINT25';
+// Codes are managed in Supabase — no password needed here
 // ──────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `YOUR PERSONALITY:
@@ -729,24 +728,48 @@ let messages = [];
 let isLoading = false;
 
 // ─── PASSWORD GATE ────────────────────────────────────────
-function checkPass() {
+async function checkPass() {
   const input = document.getElementById('passInput');
   const error = document.getElementById('gateError');
+  const btn = document.querySelector('.gate-btn');
   const val = input.value.trim().toUpperCase();
 
-  if (val === ACCESS_PASSWORD) {
-    document.getElementById('gate').classList.add('hidden');
-    setTimeout(() => {
-      document.getElementById('gate').style.display = 'none';
-      document.getElementById('app').classList.add('visible');
-    }, 600);
-  } else {
-    input.classList.add('error');
+  if (!val) return;
+
+  // Show loading state
+  btn.textContent = 'Checking...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: val })
+    });
+
+    const data = await res.json();
+
+    if (data.valid) {
+      document.getElementById('gate').classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('app').classList.add('visible');
+      }, 600);
+    } else {
+      input.classList.add('error');
+      error.classList.add('show');
+      setTimeout(() => {
+        input.classList.remove('error');
+        input.value = '';
+        btn.textContent = 'Enter →';
+        btn.disabled = false;
+      }, 600);
+    }
+  } catch (err) {
+    error.textContent = 'Connection error — please try again';
     error.classList.add('show');
-    setTimeout(() => {
-      input.classList.remove('error');
-      input.value = '';
-    }, 600);
+    btn.textContent = 'Enter →';
+    btn.disabled = false;
   }
 }
 
