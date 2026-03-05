@@ -519,6 +519,61 @@
     text-align: center;
     letter-spacing: 0.03em;
   }
+
+  .upload-btn {
+    width: 48px; height: 48px;
+    background: var(--surface2);
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  .upload-btn:hover { border-color: var(--green); background: rgba(29,185,84,0.05); }
+  .upload-btn svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; }
+  .upload-btn.has-image svg { stroke: var(--green); }
+  .upload-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .image-preview {
+    max-width: 760px;
+    margin: 0 auto 8px;
+    display: none;
+  }
+  .image-preview.show { display: flex; align-items: center; gap: 10px; }
+  .image-preview img {
+    height: 48px;
+    width: auto;
+    border: 1px solid var(--border-light);
+    object-fit: cover;
+  }
+  .image-preview-label {
+    font-size: 0.72rem;
+    color: var(--green);
+    font-weight: 600;
+    flex: 1;
+  }
+  .image-remove {
+    font-size: 0.72rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 700;
+    padding: 4px 8px;
+    border: 1px solid var(--border-light);
+    background: none;
+    font-family: 'Syne', sans-serif;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .image-remove:hover { color: var(--red); border-color: var(--red); }
+
+  .bubble-image {
+    max-width: 240px;
+    width: 100%;
+    border: 1px solid var(--border-light);
+    margin-bottom: 10px;
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -599,11 +654,22 @@
   </div>
 
   <div class="input-area">
+    <div class="image-preview" id="imagePreview">
+      <img id="previewImg" src="" alt="Upload preview" />
+      <span class="image-preview-label" id="previewLabel">Image attached</span>
+      <button class="image-remove" onclick="removeImage()">&#x2715; Remove</button>
+    </div>
     <div class="input-wrap">
+      <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('imageInput').click()" title="Upload screenshot or creative">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </button>
+      <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)" />
       <textarea
         class="input-box"
         id="userInput"
-        placeholder="Paste your metrics or describe what's happening with your ad…"
+        placeholder="Paste your metrics, describe your ad, or upload a screenshot…"
         rows="1"
         onkeydown="handleKey(event)"
         oninput="autoResize(this)"
@@ -612,7 +678,7 @@
         <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
       </button>
     </div>
-    <div class="input-hint">The Checkpoint uses AI · Validate with your own data · Not financial advice</div>
+    <div class="input-hint">The Checkpoint uses AI · Upload screenshots or creatives · Not financial advice</div>
   </div>
 </div>
 
@@ -621,7 +687,14 @@
 const ACCESS_PASSWORD = 'CHECKPOINT-26';
 // ──────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `YOUR PERSONALITY:
+const SYSTEM_PROMPT = `IMAGE ANALYSIS RULES:
+- If the user uploads a screenshot of Meta Ads Manager metrics, read all visible numbers carefully and apply your full benchmarks and decision framework to give a verdict exactly as you would if they had typed the metrics
+- If the user uploads an ad creative (image, video thumbnail, or static ad), analyse: the hook (first line or visual), the headline, the body copy, the CTA, the visual hierarchy, and give specific actionable feedback on what is working and what to improve
+- If the image contains both metrics and creative, analyse both
+- If the image is unclear or unrelated to Meta ads, politely ask them to upload a clearer screenshot
+- Always lead with your verdict badge even when analysing from an image
+
+YOUR PERSONALITY:
 - Warm, encouraging, and direct — never intimidating or condescending
 - Opinionated — you give a clear verdict, not "it depends" non-answers
 - You explain the WHY in plain English
@@ -735,6 +808,33 @@ RULES:
 
 let messages = [];
 let isLoading = false;
+let pendingImage = null;
+
+// IMAGE UPLOAD
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(",")[1];
+    const mediaType = file.type || "image/jpeg";
+    pendingImage = { base64, mediaType, filename: file.name };
+    document.getElementById("previewImg").src = dataUrl;
+    document.getElementById("previewLabel").textContent = file.name;
+    document.getElementById("imagePreview").classList.add("show");
+    document.getElementById("uploadBtn").classList.add("has-image");
+  };
+  reader.readAsDataURL(file);
+  event.target.value = "";
+}
+
+function removeImage() {
+  pendingImage = null;
+  document.getElementById("previewImg").src = "";
+  document.getElementById("imagePreview").classList.remove("show");
+  document.getElementById("uploadBtn").classList.remove("has-image");
+}
 
 // ─── PASSWORD GATE ────────────────────────────────────────
 function checkPass() {
@@ -776,7 +876,7 @@ function useStarter(btn) {
   sendMessage();
 }
 
-function appendMsg(role, content) {
+function appendMsg(role, content, imageBase64 = null) {
   const area = document.getElementById('chatArea');
   const row = document.createElement('div');
   row.className = `msg-row ${role}`;
@@ -791,7 +891,17 @@ function appendMsg(role, content) {
   if (role === 'bot') {
     bub.innerHTML = formatBot(content);
   } else {
-    bub.textContent = content;
+    if (imageBase64) {
+      const img = document.createElement('img');
+      img.src = 'data:image/jpeg;base64,' + imageBase64;
+      img.className = 'bubble-image';
+      bub.appendChild(img);
+    }
+    if (content) {
+      const t = document.createElement('span');
+      t.textContent = content;
+      bub.appendChild(t);
+    }
   }
 
   row.appendChild(av);
@@ -850,7 +960,7 @@ async function sendMessage() {
   if (isLoading) return;
   const input = document.getElementById('userInput');
   const text = input.value.trim();
-  if (!text) return;
+  if (!text && !pendingImage) return;
 
   const starters = document.getElementById('starters');
   if (starters) starters.closest('.welcome')?.remove();
@@ -858,8 +968,18 @@ async function sendMessage() {
   input.value = '';
   input.style.height = 'auto';
 
-  appendMsg('user', text);
-  messages.push({ role: 'user', content: text });
+  // Build user message content (text + optional image)
+  const userContent = [];
+  if (pendingImage) {
+    userContent.push({ type: 'image', source: { type: 'base64', media_type: pendingImage.mediaType, data: pendingImage.base64 } });
+  }
+  userContent.push({ type: 'text', text: text || (pendingImage ? 'Please analyse this image.' : '') });
+
+  appendMsg('user', text, pendingImage ? pendingImage.base64 : null);
+  messages.push({ role: 'user', content: userContent });
+
+  // Clear pending image
+  if (pendingImage) removeImage();
 
   isLoading = true;
   document.getElementById('sendBtn').disabled = true;
