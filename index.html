@@ -4,21 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Checkpoint – Your Meta Ads Strategist</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --black: #0C0C0F;
-    --white: #F8F6F1;
-    --cream: #F0EDE4;
+    --black: #312701;
+    --surface: #3d3202;
+    --surface2: #4a3d03;
+    --white: #fefad8;
+    --cream: #fffef5;
     --green: #1DB954;
     --green-dim: #12773A;
+    --blue: #007dff;
     --amber: #F5A623;
     --red: #E8352A;
-    --muted: #7A7870;
-    --border: rgba(248,246,241,0.1);
+    --muted: #a89b6a;
+    --border: rgba(254,250,216,0.1);
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .hero-headline, .section-heading, .welcome-card h2, .cta-section h2,
+  .hero-headline em, .section-heading em {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+  }
 
   html { scroll-behavior: smooth; }
 
@@ -66,7 +73,7 @@
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(12px);
-    background: rgba(12,12,15,0.8);
+    background: rgba(49,39,1,0.9);
   }
 
   .nav-logo {
@@ -133,7 +140,7 @@
   .hero-bg-glow {
     position: absolute;
     width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(29,185,84,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0,125,255,0.12) 0%, transparent 70%);
     top: 50%; left: 60%;
     transform: translate(-50%, -50%);
     pointer-events: none;
@@ -424,7 +431,7 @@
     content: '';
     position: absolute;
     width: 800px; height: 400px;
-    background: radial-gradient(ellipse, rgba(29,185,84,0.08) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(0,125,255,0.08) 0%, transparent 70%);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
@@ -646,6 +653,7 @@
 
 <footer>
   <span>© 2025 The Checkpoint</span>
+  <span style="color: #007dff; font-weight: 700;">A Selfmade Mktg Product</span>
   <span>Built for creators & small businesses</span>
 </footer>
 
