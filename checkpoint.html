@@ -920,6 +920,7 @@ function checkPass() {
   const val = input.value.trim().toUpperCase();
 
   if (val === ACCESS_PASSWORD) {
+    error.classList.remove('show');
     document.getElementById('gate').classList.add('hidden');
     setTimeout(() => {
       document.getElementById('gate').style.display = 'none';
@@ -930,6 +931,7 @@ function checkPass() {
     error.classList.add('show');
     setTimeout(() => {
       input.classList.remove('error');
+      error.classList.remove('show');
       input.value = '';
     }, 600);
   }
