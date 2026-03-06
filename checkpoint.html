@@ -820,14 +820,7 @@ function handleImageUpload(event) {
   // Block video files with helpful message
   const hasVideo = files.some(f => f.type.startsWith("video/"));
   if (hasVideo) {
-    alert("Video files can't be read directly.
-
-For the best creative analysis, screenshot 3 key frames:
-• Your opening hook (first 1-2 seconds)
-• Your main value frame
-• Your CTA frame
-
-Upload those as images and I'll give you a full breakdown!");
+    alert("Video files cannot be read directly.\n\nFor the best creative analysis, screenshot 3 key frames:\n- Your opening hook (first 1-2 seconds)\n- Your main value frame\n- Your CTA frame\n\nUpload those as images and I will give you a full breakdown!");
     event.target.value = "";
     return;
   }
